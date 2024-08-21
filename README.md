@@ -4,8 +4,12 @@ Thank you for participating in this test!
 
 In this exercise, we’ll walk through the specification, planning, and development of a feature using [Cocos Creator](https://www.cocos.com/en) and [TypeScript](https://www.typescriptlang.org/).
 
-Main Goal: Plan and develop the proposed specification using [MVVM Architecture](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93viewmodel) and [Reactive Programming](https://www.baeldung.com/cs/reactive-programming) patterns. While the provided UI/UX designs serve as a reference, feel free to explore your own ideas during development.
+## Main Goal 
+Plan and develop the proposed specification using [MVVM Architecture](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93viewmodel) and [Reactive Programming](https://www.baeldung.com/cs/reactive-programming) patterns. While the provided UI/UX designs serve as a reference, feel free to explore your own ideas during development.
 
+- Please note that MVC, MVP, MVA, and other architecture patterns won’t be accepted as valid solutions.
+
+    - We understand that this might be your first time working with MVVM and Reactive patterns. If that’s the case, we’d prefer to see your ability to learn and start implementing the proposed ones, rather than fully completing the task requirements with alternative solutions.
 ## Before we begin ...
 
 - Install [Cocos Creator dashboard](https://www.cocos.com/en/creator-download).
