@@ -1,3 +1,4 @@
+import { SpriteFrame } from "cc";
 export interface IHero {
   readonly id: string;
   readonly name: string;
@@ -16,3 +17,12 @@ export interface IBuildingInfo {
 }
 
 export type Nullable<T> = T | null;
+
+export type TSpriteFrameDict = {
+  [key in EHeroSprite]: SpriteFrame;
+};
+
+export enum EHeroSprite {
+  face,
+  rank
+}

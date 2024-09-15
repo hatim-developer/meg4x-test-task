@@ -1,7 +1,9 @@
-import { _decorator, Button, Component, Label, Layout, Sprite, UIOpacity } from "cc";
+import { _decorator, Button, Component, instantiate, Label, Layout, Prefab, Sprite, UIOpacity, warn, Node } from "cc";
 import { TowerViewModel } from "../viewmodels/TowerViewModel";
 import { Subscription } from "rxjs";
 import { IBuildingInfo, IHero, Nullable } from "../common/types";
+import { HeroViewModel } from "../viewmodels/HeroViewModel";
+import { HeroView } from "./HeroView";
 const { ccclass, property } = _decorator;
 
 @ccclass("TowerView")
@@ -28,6 +30,11 @@ export class TowerView extends Component {
     type: Layout
   })
   public layoutHeroesList: Nullable<Layout> = null;
+
+  @property({
+    type: Prefab
+  })
+  public prefabHero: Nullable<Prefab> = null;
 
   @property({
     type: Button
@@ -91,12 +98,12 @@ export class TowerView extends Component {
   }
 
   private onNewHeroes(heroes: IHero[]) {
-    if (heroes === null || !heroes?.length) {
+    if (!heroes?.length) {
       console.warn("TowerView no heroes to show");
       return;
     }
 
-    // TODO: render heroes list
+    this.updateHeroesList(heroes);
   }
 
   /// UI Methods
@@ -104,6 +111,26 @@ export class TowerView extends Component {
     console.log("TowerView updatingBuildingInfo() : info", building); // _DEBUG_
     this.labelPanelTitle!.string = building.name;
     this.labelPanelDesc!.string = building.description;
+  }
+
+  private updateHeroesList(heroes: IHero[]) {
+    heroes.forEach(this.instantiateHero, this);
+  }
+
+  private instantiateHero(hero: IHero) {
+    if (!this.prefabHero) {
+      warn("TowerView instantiateHero(): prefabHero is null");
+      return;
+    }
+
+    const heroNode: Node = instantiate(this.prefabHero);
+    const heroView = heroNode.getComponent(HeroView);
+
+    if (heroView) {
+      const heroViewModel = new HeroViewModel(hero);
+      heroView.setViewModel(heroViewModel);
+    }
+    this.layoutHeroesList!.node.addChild(heroNode);
   }
 
   private resetUI(): void {
