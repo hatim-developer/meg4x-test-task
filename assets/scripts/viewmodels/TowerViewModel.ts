@@ -8,7 +8,6 @@ export class TowerViewModel {
     this.towerModel = new TowerModel();
 
     this.loadData();
-    this.subscribeModelData();
   }
 
   private loadData(): void {
@@ -17,13 +16,11 @@ export class TowerViewModel {
     this.towerModel.loadBuildingData(buildingId);
   }
 
-  private subscribeModelData(): void {
-    this.towerModel.heroList$.subscribe((heroes) => {
-      console.log("TowerVM new heroes  data: ", heroes); // TODO: DEBUG
-    });
+  public getBuildingInfoObservable() {
+    return this.towerModel.buildingInfo$;
+  }
 
-    this.towerModel.buildingInfo$.subscribe((buildingInfo) => {
-      console.log("TowerVM new building data: ", buildingInfo); // TODO: DEBUG
-    });
+  public getHeroesListObservable() {
+    return this.towerModel.heroList$;
   }
 }
