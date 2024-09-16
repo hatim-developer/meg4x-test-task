@@ -1,4 +1,21 @@
-import { _decorator, Button, Component, instantiate, Label, Layout, Prefab, Sprite, UIOpacity, warn, Node, Input, log, EventTouch, input } from "cc";
+import {
+  _decorator,
+  Button,
+  Component,
+  instantiate,
+  Label,
+  Layout,
+  Prefab,
+  Sprite,
+  UIOpacity,
+  warn,
+  Node,
+  Input,
+  log,
+  EventTouch,
+  input,
+  Color
+} from "cc";
 import { TowerViewModel } from "../viewmodels/TowerViewModel";
 import { Subscription } from "rxjs";
 import { IBuildingInfo, IHero, Nullable } from "../common/types";
@@ -102,8 +119,12 @@ export class TowerView extends Component {
       this.onHeroSelect(selectedHero);
     });
 
+    const summonHeroesQueueSub = this.towerViewModel.getSummonHeroesQueueObservable().subscribe((summonHeroes) => {
+      this.onSummonQueueChange(summonHeroes);
+    });
+
     // * save subscriptions for cleaning
-    this._subscription.push(buildingInfoSub, heroesListSub, selectedHeroSub);
+    this._subscription.push(buildingInfoSub, heroesListSub, selectedHeroSub, summonHeroesQueueSub);
   }
 
   /// Subscriber Methods
@@ -114,7 +135,7 @@ export class TowerView extends Component {
       return;
     }
     this.updateBuildingDetails(building);
-    this.renderSummonQueue();
+    this.createSummonQueueFrames();
   }
 
   private onNewHeroes(heroes: IHero[]) {
@@ -130,11 +151,16 @@ export class TowerView extends Component {
     log("TowerView onHeroSelect", hero); // !__DEBUG__
 
     if (hero === null) {
-      this.updateHireButton();
+      this.updateHireButton(false);
       return;
     }
-    // enable hire button
     this.updateHireButton(true, hero.cost);
+  }
+
+  private onSummonQueueChange(summonQueue: IHero[]): void {
+    log("TowerView onNewHeroHire() summonQueue:", summonQueue); // !__DEBUG__
+
+    this.renderSummonQueueHeroes(summonQueue);
   }
 
   /// UI Methods
@@ -144,10 +170,10 @@ export class TowerView extends Component {
     this.labelPanelDesc!.string = building.description;
   }
 
-  private renderSummonQueue(): void {
+  private createSummonQueueFrames(): void {
     this.layoutSummonQueue!.node.removeAllChildren();
 
-    const queueSize = this._towerViewModel?.geSummonQueueSize() || 0;
+    const queueSize = this._towerViewModel?.getMaxHireSlots() || 0;
 
     for (let i = 0; i < queueSize; i++) {
       this.instantiateSummonHero();
@@ -164,12 +190,28 @@ export class TowerView extends Component {
     this.layoutSummonQueue!.node.addChild(summonHeroNode);
   }
 
-  private updateSummonHeroDetails(summonHeroNode: Node, hero: IHero): void {
+  private renderSummonQueueHeroes(summonQueue: IHero[]): void {
+    if (this.layoutSummonQueue === null) {
+      warn("TowerView.renderSummonQueueHeroes() layoutSummonQueue is null");
+      return;
+    }
+
+    const children = this.layoutSummonQueue.node.children;
+    const queueSize = summonQueue.length;
+
+    children.forEach((node, i) => {
+      this.updateSummonHeroDetails(node, i < queueSize ? summonQueue[i] : null);
+    });
+  }
+
+  private updateSummonHeroDetails(summonHeroNode: Node, hero: Nullable<IHero>): void {
     const summonHeroView = summonHeroNode.getComponent(SummonHeroView);
 
     if (summonHeroView) {
-      const summonHeroViewModel = new SummonHeroViewModel(hero);
-      summonHeroView.setViewModel(summonHeroViewModel);
+      const summonHeroViewModel = summonHeroView.getViewModel();
+      if (summonHeroViewModel) {
+        hero ? summonHeroViewModel.setHeroData(hero) : summonHeroViewModel.resetHeroData();
+      }
     }
   }
 
@@ -203,24 +245,31 @@ export class TowerView extends Component {
   }
 
   private resetHireButton(): void {
-    this.updateHireButton();
+    this.updateHireButton(false);
   }
 
-  private updateHireButton(enable: boolean = false, cost: number = 0): void {
-    // TODO: __HANDLE_CASE__ currency check
-    if (this.buttonHire) {
-      this.buttonHire.interactable = enable;
-
-      const opacityComp = this.buttonHire.getComponent(UIOpacity);
-      if (opacityComp) {
-        opacityComp.opacity = enable ? 255 : 100;
-      }
-
-      this.labelHireCost!.string = cost ? cost.toString() : "";
-      this.spriteHireCurrency!.node.active = enable;
-
-      this.enableHireButtonTouchListener(enable);
+  private updateHireButton(activate: boolean, cost: number = -1): void {
+    if (this.buttonHire === null) {
+      return;
     }
+
+    const canHire = this.towerViewModel.canHireHero(cost);
+    const enable = activate && canHire;
+
+    // button touch & opacity
+    this.buttonHire.interactable = enable;
+    const opacityComp = this.buttonHire.getComponent(UIOpacity);
+    if (opacityComp) {
+      opacityComp.opacity = enable ? 255 : 150;
+    }
+
+    // currency details
+    this.spriteHireCurrency!.node.active = activate;
+    this.labelHireCost!.string = cost > -1 ? cost.toString() : "";
+    this.labelHireCost!.color = canHire ? Color.GREEN : Color.RED;
+
+    // touch listener
+    this.enableHireButtonTouchListener(enable);
   }
 
   /// Event Listeners
@@ -234,12 +283,15 @@ export class TowerView extends Component {
 
   private onHireButtonClicked(event: EventTouch): void {
     event.propagationStopped = true;
-    log("TowerView onHireButtonClicked()", event, this); // !_DEBUG_
+    log("TowerView onHireButtonClicked()"); // !_DEBUG
+
+    // hire hero
+    this._towerViewModel?.hireHero();
   }
 
   private onTouchEndEvent(event: EventTouch): void {
     event.propagationStopped = true;
-    log("TowerView onTouchEndEvent()", event, this); // !_DEBUG_
+    log("TowerView onTouchEndEvent()"); // !_DEBUG_
 
     // deselect hero on click outside of hero | hire button
     if (this._towerViewModel) {

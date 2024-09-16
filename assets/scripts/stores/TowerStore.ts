@@ -35,4 +35,8 @@ export class TowerStore {
   getSelectedHeroObservable() {
     return this.selectedHero$.asObservable();
   }
+
+  getSelectedHero() {
+    return this.selectedHero$.value;
+  }
 }

@@ -1,20 +1,19 @@
 import { BehaviorSubject, forkJoin, interval, map, takeWhile } from "rxjs";
 import { EHeroSprite, IHero, Nullable, TSpriteFrameDict } from "../common/types";
-import HeroModel from "../models/HeroModel";
 import { fetchSpriteFrame } from "../apis/SpriteFrameApi";
-import { warn } from "cc";
+import { log, warn } from "cc";
 import { TowerStore } from "../stores/TowerStore";
 
 export class SummonHeroViewModel {
   private _spriteFrames$: BehaviorSubject<Nullable<TSpriteFrameDict>>;
   private _summonProgress$: BehaviorSubject<number>;
 
-  private _heroModel: HeroModel;
+  private _heroModel: Nullable<IHero>;
   private _towerStore: TowerStore;
 
-  constructor(hero: IHero) {
+  constructor() {
     // * hero model data class
-    this._heroModel = hero;
+    this._heroModel = null;
 
     // * state sprite frames
     this._spriteFrames$ = new BehaviorSubject<Nullable<TSpriteFrameDict>>(null);
@@ -24,12 +23,32 @@ export class SummonHeroViewModel {
 
     // * shared TowerStore instance
     this._towerStore = TowerStore.getInstance();
+  }
+
+  resetHeroData() {
+    if (this._heroModel === null) {
+      return;
+    }
+
+    warn("SummonHeroVM: TODO: resetHeroData()");
+  }
+
+  setHeroData(hero: IHero) {
+    if (this._heroModel && this._heroModel.id === hero.id) {
+      log("SummonHeroVM: setData() same hero assigned, id: ", hero.id);
+      return;
+    }
+    this._heroModel = hero;
 
     // * loading sprite frames dynamically
     this.loadSpriteFrames();
   }
 
   private loadSpriteFrames() {
+    if (this._heroModel === null) {
+      return;
+    }
+
     const basePath = "dynamic_sprites/heroes/";
     const face$ = fetchSpriteFrame(basePath + this._heroModel.id);
     const rank$ = fetchSpriteFrame(`${basePath}ui/${this._heroModel.rank}_highlight`);
@@ -63,10 +82,14 @@ export class SummonHeroViewModel {
   }
 
   public summonHero() {
+    if (!this._heroModel) {
+      warn("SummonHeroVM:summonHero() something is too wrong, summon hero data is null, and summonHero is called!");
+    }
+
     // Each second updating progress bar
     interval(1000)
       .pipe(
-        map((sec) => sec / this._heroModel.summonCoolDown),
+        map((sec) => sec / this._heroModel!.summonCoolDown),
         takeWhile((progress) => progress <= 1)
       )
       .subscribe((progress) => {

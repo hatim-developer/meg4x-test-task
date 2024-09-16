@@ -26,16 +26,17 @@ export class SummonHeroView extends Component {
   })
   public progressBarSummon: Nullable<ProgressBar> = null;
 
-  public summonHeroViewModel: Nullable<SummonHeroViewModel> = null;
+  private summonHeroViewModel: Nullable<SummonHeroViewModel> = null;
 
-  public setViewModel(heroVM: SummonHeroViewModel) {
-    this.summonHeroViewModel = heroVM;
+  public getViewModel() {
+    return this.summonHeroViewModel;
   }
 
   private _subscription: Subscription[] = [];
 
   /// Lifecycle Methods
   protected onLoad(): void {
+    this.summonHeroViewModel = new SummonHeroViewModel();
     this.subscribeEvents();
   }
 
