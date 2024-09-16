@@ -1,4 +1,4 @@
-import { _decorator, Button, Component, instantiate, Label, Layout, Prefab, Sprite, UIOpacity, warn, Node } from "cc";
+import { _decorator, Button, Component, instantiate, Label, Layout, Prefab, Sprite, UIOpacity, warn, Node, Input, log, EventTouch, input } from "cc";
 import { TowerViewModel } from "../viewmodels/TowerViewModel";
 import { Subscription } from "rxjs";
 import { IBuildingInfo, IHero, Nullable } from "../common/types";
@@ -66,12 +66,20 @@ export class TowerView extends Component {
 
   start() {
     this.subscribeEvents();
+
+    // * Global touch event to handle to deselect hero & close panel ui
+    input.on(Input.EventType.TOUCH_END, this.onTouchEndEvent, this);
   }
 
   update(deltaTime: number) {}
 
   protected onDestroy(): void {
+    // * subscription cleanup
     this._subscription.forEach((sub) => sub.unsubscribe);
+
+    // * Touch listeners cleanup
+    input.off(Input.EventType.TOUCH_END, this.onTouchEndEvent, this);
+    this.enableHireButtonTouchListener(false);
   }
 
   private subscribeEvents(): void {
@@ -83,8 +91,12 @@ export class TowerView extends Component {
       this.onNewHeroes(heroes);
     });
 
+    const selectedHeroSub = this.towerViewModel.getSelectedHeroObservable().subscribe((selectedHero) => {
+      this.onHeroSelect(selectedHero);
+    });
+
     // * save subscriptions for cleaning
-    this._subscription.push(buildingInfoSub, heroesListSub);
+    this._subscription.push(buildingInfoSub, heroesListSub, selectedHeroSub);
   }
 
   /// Subscriber Methods
@@ -104,6 +116,17 @@ export class TowerView extends Component {
     }
 
     this.updateHeroesList(heroes);
+  }
+
+  private onHeroSelect(hero: Nullable<IHero>) {
+    log("TowerView onHeroSelect", hero); // !__DEBUG__
+
+    if (hero === null) {
+      this.updateHireButton();
+      return;
+    }
+    // enable hire button
+    this.updateHireButton(true, hero.cost);
   }
 
   /// UI Methods
@@ -143,15 +166,48 @@ export class TowerView extends Component {
   }
 
   private resetHireButton(): void {
+    this.updateHireButton();
+  }
+
+  private updateHireButton(enable: boolean = false, cost: number = 0): void {
+    // TODO: __HANDLE_CASE__ currency check
     if (this.buttonHire) {
-      this.buttonHire.interactable = false;
+      this.buttonHire.interactable = enable;
 
       const opacityComp = this.buttonHire.getComponent(UIOpacity);
       if (opacityComp) {
-        opacityComp.opacity = 100;
+        opacityComp.opacity = enable ? 255 : 100;
       }
+
+      this.labelHireCost!.string = cost ? cost.toString() : "";
+      this.spriteHireCurrency!.node.active = enable;
+
+      this.enableHireButtonTouchListener(enable);
     }
-    this.labelHireCost!.string = "";
-    this.spriteHireCurrency!.node.active = false;
+  }
+
+  /// Event Listeners
+  private enableHireButtonTouchListener(enable: boolean) {
+    if (enable) {
+      this.buttonHire?.node.on(Input.EventType.TOUCH_END, this.onHireButtonClicked, this);
+    } else {
+      this.buttonHire?.node.off(Input.EventType.TOUCH_END, this.onHireButtonClicked, this);
+    }
+  }
+
+  private onHireButtonClicked(event: EventTouch): void {
+    event.propagationStopped = true;
+    log("TowerView onHireButtonClicked()", event, this); // !_DEBUG_
+  }
+
+  private onTouchEndEvent(event: EventTouch): void {
+    event.propagationStopped = true;
+    log("TowerView onTouchEndEvent()", event, this); // !_DEBUG_
+
+    // deselect hero on click outside of hero | hire button
+    if (this._towerViewModel) {
+      this._towerViewModel.deselectHero();
+    }
+    // TODO: __HANDLE_CASE__ close TowerUi panel on click outside
   }
 }

@@ -1,11 +1,16 @@
 import { TowerModel } from "../models/TowerModel";
+import { TowerStore } from "../stores/TowerStore";
 
 export class TowerViewModel {
   private towerModel: TowerModel;
+  private towerStore: TowerStore;
 
   constructor() {
     // * init TowerModel
     this.towerModel = new TowerModel();
+
+    // * shared TowerStore instance
+    this.towerStore = TowerStore.getInstance();
 
     this.loadData();
   }
@@ -22,5 +27,13 @@ export class TowerViewModel {
 
   public getHeroesListObservable() {
     return this.towerModel.heroList$;
+  }
+
+  public getSelectedHeroObservable() {
+    return this.towerStore.getSelectedHeroObservable();
+  }
+
+  public deselectHero(): void {
+    this.towerStore.deselectHero();
   }
 }

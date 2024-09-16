@@ -1,5 +1,5 @@
 import { _decorator, Component, EventTouch, Graphics, Input, input, log, Sprite, UIOpacity, UITransform } from "cc";
-import { EHeroSprite, Nullable, TSpriteFrameDict } from "../common/types";
+import { EHeroSprite, IHero, Nullable, TSpriteFrameDict } from "../common/types";
 import { HeroViewModel } from "../viewmodels/HeroViewModel";
 import { Subscription } from "rxjs";
 const { ccclass, property } = _decorator;
@@ -27,24 +27,35 @@ export class HeroView extends Component {
     this.heroViewModel = heroVM;
   }
 
-  private _subscription: Nullable<Subscription> = null;
+  private _subscription: Subscription[] = [];
 
   /// Lifecycle Methods
   protected onLoad(): void {
+    this.subscribeEvents();
+  }
+
+  private subscribeEvents(): void {
     if (this.heroViewModel) {
-      this._subscription = this.heroViewModel.getSpriteFramesObservable().subscribe((value) => {
+      const spriteFramesSub = this.heroViewModel.getSpriteFramesObservable().subscribe((value) => {
         if (value === null) {
           return;
         }
         this.onFramesLoad(value);
       });
+
+      const selectedHeroSub = this.heroViewModel.getSelectedHeroObservable().subscribe((selectedHero) => {
+        this.onHeroSelect(selectedHero);
+      });
+
+      // * save subscriptions for cleaning
+      this._subscription.push(spriteFramesSub, selectedHeroSub);
     }
   }
 
   update(deltaTime: number) {}
 
   protected onDestroy(): void {
-    this._subscription?.unsubscribe();
+    this._subscription.forEach((sub) => sub.unsubscribe);
     this.node.off(Input.EventType.TOUCH_END, this.onTouchEndEvent, this);
   }
 
@@ -54,6 +65,17 @@ export class HeroView extends Component {
 
     this.updateSpriteFrames(spriteFramesDict);
     this.activate();
+  }
+
+  private onHeroSelect(hero: Nullable<IHero>) {
+    if (hero === null) {
+      this.highlightPortrait(false);
+      return;
+    }
+
+    if (this.heroViewModel) {
+      this.highlightPortrait(this.heroViewModel.canHighlightPortrait(hero.id));
+    }
   }
 
   /// UI Methods
@@ -106,5 +128,9 @@ export class HeroView extends Component {
   private onTouchEndEvent(event: EventTouch) {
     event.propagationStopped = true;
     this.highlightPortrait();
+
+    if (this.heroViewModel) {
+      this.heroViewModel.selectHero();
+    }
   }
 }

@@ -3,10 +3,12 @@ import { EHeroSprite, IHero, Nullable, TSpriteFrameDict } from "../common/types"
 import HeroModel from "../models/HeroModel";
 import { fetchSpriteFrame } from "../apis/SpriteFrameApi";
 import { warn } from "cc";
+import { TowerStore } from "../stores/TowerStore";
 
 export class HeroViewModel {
   private _spriteFrames$: BehaviorSubject<Nullable<TSpriteFrameDict>>;
   private _heroModel: HeroModel;
+  private _towerStore: TowerStore;
 
   constructor(hero: IHero) {
     // * hero model data class
@@ -14,6 +16,9 @@ export class HeroViewModel {
 
     // * state sprite frames
     this._spriteFrames$ = new BehaviorSubject<Nullable<TSpriteFrameDict>>(null);
+
+    // * shared TowerStore instance
+    this._towerStore = TowerStore.getInstance();
 
     // * loading sprite frames dynamically
     this.loadSpriteFrames();
@@ -40,5 +45,17 @@ export class HeroViewModel {
 
   public getSpriteFramesObservable() {
     return this._spriteFrames$.asObservable();
+  }
+
+  public getSelectedHeroObservable() {
+    return this._towerStore.getSelectedHeroObservable();
+  }
+
+  public selectHero(): void {
+    this._towerStore.setSelectedHero(this._heroModel);
+  }
+
+  public canHighlightPortrait(heroId: string): boolean {
+    return heroId === this._heroModel.id;
   }
 }
