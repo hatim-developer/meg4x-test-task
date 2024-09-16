@@ -22,7 +22,7 @@ import { IBuildingInfo, IHero, Nullable } from "../common/types";
 import { HeroViewModel } from "../viewmodels/HeroViewModel";
 import { HeroView } from "./HeroView";
 import { SummonHeroView } from "./SummonHeroView";
-import { SummonHeroViewModel } from "../viewmodels/SummonHeroViewModel";
+
 const { ccclass, property } = _decorator;
 
 @ccclass("TowerView")
@@ -158,7 +158,7 @@ export class TowerView extends Component {
   }
 
   private onSummonQueueChange(summonQueue: IHero[]): void {
-    log("TowerView onNewHeroHire() summonQueue:", summonQueue); // !__DEBUG__
+    log("TowerView onSummonQueueChange():", summonQueue); // !__DEBUG__
 
     this.renderSummonQueueHeroes(summonQueue);
   }
@@ -200,17 +200,27 @@ export class TowerView extends Component {
     const queueSize = summonQueue.length;
 
     children.forEach((node, i) => {
-      this.updateSummonHeroDetails(node, i < queueSize ? summonQueue[i] : null);
+      this.updateSummonHeroDetails(node, i < queueSize ? summonQueue[i] : null, i === 0);
     });
+
+    this.towerViewModel?.checkSummonHero();
+
+    // * CASE: if queue was full and just made a place & hero was selected
+    if (queueSize === children.length - 1) {
+      const selectedHero = this.towerViewModel?.getSelectedHero();
+      if (selectedHero) {
+        this.onHeroSelect(selectedHero);
+      }
+    }
   }
 
-  private updateSummonHeroDetails(summonHeroNode: Node, hero: Nullable<IHero>): void {
+  private updateSummonHeroDetails(summonHeroNode: Node, hero: Nullable<IHero>, canSummon: boolean = false): void {
     const summonHeroView = summonHeroNode.getComponent(SummonHeroView);
 
     if (summonHeroView) {
       const summonHeroViewModel = summonHeroView.getViewModel();
       if (summonHeroViewModel) {
-        hero ? summonHeroViewModel.setHeroData(hero) : summonHeroViewModel.resetHeroData();
+        hero ? summonHeroViewModel.setHeroData(hero, canSummon) : summonHeroViewModel.resetHeroData();
       }
     }
   }

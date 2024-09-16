@@ -1,4 +1,4 @@
-import { BehaviorSubject, forkJoin, interval, map, takeWhile } from "rxjs";
+import { BehaviorSubject, Subscription, forkJoin, interval, map, takeWhile } from "rxjs";
 import { EHeroSprite, IHero, Nullable, TSpriteFrameDict } from "../common/types";
 import { fetchSpriteFrame } from "../apis/SpriteFrameApi";
 import { log, warn } from "cc";
@@ -10,6 +10,8 @@ export class SummonHeroViewModel {
 
   private _heroModel: Nullable<IHero>;
   private _towerStore: TowerStore;
+  private _progressSubscription: Nullable<Subscription>;
+  private _isSummoningHeroSubscription: Nullable<Subscription>;
 
   constructor() {
     // * hero model data class
@@ -23,6 +25,9 @@ export class SummonHeroViewModel {
 
     // * shared TowerStore instance
     this._towerStore = TowerStore.getInstance();
+
+    this._progressSubscription = null;
+    this._isSummoningHeroSubscription = null;
   }
 
   resetHeroData() {
@@ -30,10 +35,24 @@ export class SummonHeroViewModel {
       return;
     }
 
-    warn("SummonHeroVM: TODO: resetHeroData()");
+    warn("SummonHeroVM: TODO: resetHeroData()", this._heroModel);
+    const resetFrames: TSpriteFrameDict = {
+      [EHeroSprite.face]: undefined,
+      [EHeroSprite.rank]: undefined,
+      [EHeroSprite.type]: undefined
+    };
+    this._spriteFrames$.next(resetFrames);
+
+    if (this._summonProgress$.value >= 1) {
+      this._summonProgress$.next(0);
+    }
+
+    this._progressSubscription?.unsubscribe();
+    this._isSummoningHeroSubscription?.unsubscribe();
+    this._heroModel = null;
   }
 
-  setHeroData(hero: IHero) {
+  setHeroData(hero: IHero, canSummon: boolean) {
     if (this._heroModel && this._heroModel.id === hero.id) {
       log("SummonHeroVM: setData() same hero assigned, id: ", hero.id);
       return;
@@ -42,6 +61,12 @@ export class SummonHeroViewModel {
 
     // * loading sprite frames dynamically
     this.loadSpriteFrames();
+
+    // * subscribe to summoningHero
+    if (canSummon) {
+      this.subscribeSummoningHero();
+      this._summonProgress$.next(0);
+    }
   }
 
   private loadSpriteFrames() {
@@ -69,6 +94,7 @@ export class SummonHeroViewModel {
     });
   }
 
+  /// Observables getters
   public getSpriteFramesObservable() {
     return this._spriteFrames$.asObservable();
   }
@@ -81,19 +107,49 @@ export class SummonHeroViewModel {
     return this._towerStore.getSelectedHeroObservable();
   }
 
-  public summonHero() {
+  /// Subscription Methods
+  private subscribeSummoningHero(): void {
+    this._isSummoningHeroSubscription?.unsubscribe();
+    this._isSummoningHeroSubscription = this._towerStore.getIsSummoningObservable().subscribe((summoning) => {
+      if (summoning) {
+        this.summonHero();
+      }
+    });
+  }
+
+  public summonHero(): void {
     if (!this._heroModel) {
       warn("SummonHeroVM:summonHero() something is too wrong, summon hero data is null, and summonHero is called!");
     }
 
+    if (this._progressSubscription) {
+      warn("SummonHeroVM:summonHero(), already progress sub is running clearing it.");
+      this._progressSubscription?.unsubscribe();
+    }
+
+    const limit = this._heroModel!.summonCoolDown;
+
     // Each second updating progress bar
-    interval(1000)
+    this._progressSubscription = interval(1000)
       .pipe(
-        map((sec) => sec / this._heroModel!.summonCoolDown),
+        map((sec) => (sec + 1) / limit),
         takeWhile((progress) => progress <= 1)
       )
       .subscribe((progress) => {
-        this._summonProgress$.next(Math.min(progress, 1));
+        const _progress = Math.min(progress, 1);
+        this._summonProgress$.next(_progress);
+
+        /// Summoning completed
+        if (_progress === 1) {
+          this.onSummonComplete();
+        }
       });
+  }
+
+  private onSummonComplete(): void {
+    log("SummonHeroVM summon completed", this._heroModel?.id);
+    this._progressSubscription?.unsubscribe();
+    this._progressSubscription = null;
+    this._towerStore.clearSummoning();
   }
 }

@@ -22,6 +22,7 @@ export class TowerViewModel {
     this._summonHeroesQueue$ = new BehaviorSubject<HeroModel[]>([]);
 
     this.loadData();
+    this.subscribeEvents();
   }
 
   private loadData(): void {
@@ -30,6 +31,7 @@ export class TowerViewModel {
     this.towerModel.loadBuildingData(buildingId);
   }
 
+  /// Observables Methods
   public getBuildingInfoObservable() {
     return this.towerModel.buildingInfo$;
   }
@@ -44,6 +46,21 @@ export class TowerViewModel {
 
   public getSummonHeroesQueueObservable() {
     return this._summonHeroesQueue$.asObservable();
+  }
+
+  /// Subscription Methods
+  private subscribeEvents(): void {
+    this.towerStore.getIsSummoningObservable().subscribe((summoning) => {
+      if (!summoning) {
+        setTimeout(() => {
+          this.shiftSummonedHero();
+        }, 30);
+      }
+    });
+  }
+
+  public getSelectedHero() {
+    return this.towerStore.getSelectedHero();
   }
 
   public deselectHero(): void {
@@ -81,11 +98,31 @@ export class TowerViewModel {
       return;
     }
 
+    // deselect hero first
+    this.deselectHero();
+
     // push hero to queue
     hiredHeroes.push(selectedHero);
     this._summonHeroesQueue$.next(hiredHeroes);
+  }
 
-    // deselect hero
-    this.deselectHero();
+  public checkSummonHero(): void {
+    const queue = this._summonHeroesQueue$.value;
+
+    if (queue.length) {
+      this.towerStore.enableSummoning();
+    }
+  }
+
+  public shiftSummonedHero(): void {
+    const queue = this._summonHeroesQueue$.value;
+
+    const hero = queue.shift();
+    this._summonHeroesQueue$.next(queue);
+
+    if (hero) {
+      /// TODO: Send this guy to global player heroes list
+      console.warn("TowerVM TODO: shiftSummonHero() send hero to player heroes list");
+    }
   }
 }
