@@ -159,7 +159,7 @@ export class TowerView extends Component {
   private resetUI(): void {
     this.labelPanelTitle!.string = "";
     this.labelPanelDesc!.string = "";
-    this.layoutSummonQueue!.node.removeAllChildren();
+    // this.layoutSummonQueue!.node.removeAllChildren(); // !_DEBUG_
     this.layoutHeroesList!.node.removeAllChildren();
 
     this.resetHireButton();

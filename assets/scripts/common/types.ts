@@ -19,10 +19,11 @@ export interface IBuildingInfo {
 export type Nullable<T> = T | null;
 
 export type TSpriteFrameDict = {
-  [key in EHeroSprite]: SpriteFrame;
+  [key in EHeroSprite]?: SpriteFrame;
 };
 
 export enum EHeroSprite {
   face,
-  rank
+  rank,
+  type
 }

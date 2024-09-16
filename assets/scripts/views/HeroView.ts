@@ -1,4 +1,4 @@
-import { _decorator, Component, EventTouch, Graphics, Input, input, log, Sprite, UIOpacity, UITransform } from "cc";
+import { _decorator, Component, EventTouch, Graphics, Input, log, Sprite, UIOpacity, UITransform } from "cc";
 import { EHeroSprite, IHero, Nullable, TSpriteFrameDict } from "../common/types";
 import { HeroViewModel } from "../viewmodels/HeroViewModel";
 import { Subscription } from "rxjs";
@@ -81,11 +81,11 @@ export class HeroView extends Component {
   /// UI Methods
   private updateSpriteFrames(spriteFramesDict: TSpriteFrameDict): void {
     if (this.spriteHeroFace) {
-      this.spriteHeroFace.spriteFrame = spriteFramesDict[EHeroSprite.face];
+      this.spriteHeroFace.spriteFrame = spriteFramesDict[EHeroSprite.face]!;
     }
 
     if (this.spriteHeroRank) {
-      this.spriteHeroRank.spriteFrame = spriteFramesDict[EHeroSprite.rank];
+      this.spriteHeroRank.spriteFrame = spriteFramesDict[EHeroSprite.rank]!;
     }
   }
 
