@@ -1,4 +1,4 @@
-import { BehaviorSubject, forkJoin } from "rxjs";
+import { BehaviorSubject, forkJoin, interval, map, takeWhile } from "rxjs";
 import { EHeroSprite, IHero, Nullable, TSpriteFrameDict } from "../common/types";
 import HeroModel from "../models/HeroModel";
 import { fetchSpriteFrame } from "../apis/SpriteFrameApi";
@@ -7,6 +7,8 @@ import { TowerStore } from "../stores/TowerStore";
 
 export class SummonHeroViewModel {
   private _spriteFrames$: BehaviorSubject<Nullable<TSpriteFrameDict>>;
+  private _summonProgress$: BehaviorSubject<number>;
+
   private _heroModel: HeroModel;
   private _towerStore: TowerStore;
 
@@ -16,6 +18,9 @@ export class SummonHeroViewModel {
 
     // * state sprite frames
     this._spriteFrames$ = new BehaviorSubject<Nullable<TSpriteFrameDict>>(null);
+
+    // * summoning progress state
+    this._summonProgress$ = new BehaviorSubject<number>(0);
 
     // * shared TowerStore instance
     this._towerStore = TowerStore.getInstance();
@@ -49,7 +54,23 @@ export class SummonHeroViewModel {
     return this._spriteFrames$.asObservable();
   }
 
+  public getSummonProgressObservable() {
+    return this._summonProgress$.asObservable();
+  }
+
   public getSelectedHeroObservable() {
     return this._towerStore.getSelectedHeroObservable();
+  }
+
+  public summonHero() {
+    // Each second updating progress bar
+    interval(1000)
+      .pipe(
+        map((sec) => sec / this._heroModel.summonCoolDown),
+        takeWhile((progress) => progress <= 1)
+      )
+      .subscribe((progress) => {
+        this._summonProgress$.next(Math.min(progress, 1));
+      });
   }
 }

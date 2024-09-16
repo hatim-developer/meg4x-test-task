@@ -61,8 +61,12 @@ export class SummonHeroView extends Component {
         this.onFramesLoad(value);
       });
 
+      const summonProgressSub = this.summonHeroViewModel.getSummonProgressObservable().subscribe((progress) => {
+        this.onSummonProgress(progress);
+      });
+
       // * save subscriptions for cleaning
-      this._subscription.push(spriteFramesSub);
+      this._subscription.push(spriteFramesSub, summonProgressSub);
     }
   }
 
@@ -78,6 +82,14 @@ export class SummonHeroView extends Component {
 
     this.updateSpriteFrames(spriteFramesDict);
     this.activate();
+  }
+
+  private onSummonProgress(progress: number): void {
+    log("SummonHeroView: Summon progress: ", progress); // __DEBUG__
+
+    if (this.progressBarSummon) {
+      this.progressBarSummon.progress = progress;
+    }
   }
 
   /// UI Methods
