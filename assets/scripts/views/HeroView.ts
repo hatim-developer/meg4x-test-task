@@ -1,4 +1,4 @@
-import { _decorator, Component, log, Sprite, UIOpacity } from "cc";
+import { _decorator, Component, EventTouch, Graphics, Input, input, log, Sprite, UIOpacity, UITransform } from "cc";
 import { EHeroSprite, Nullable, TSpriteFrameDict } from "../common/types";
 import { HeroViewModel } from "../viewmodels/HeroViewModel";
 import { Subscription } from "rxjs";
@@ -9,12 +9,17 @@ export class HeroView extends Component {
   @property({
     type: Sprite
   })
-  public spriteHeroFace: Nullable<Sprite | null> = null;
+  public spriteHeroFace: Nullable<Sprite> = null;
 
   @property({
     type: Sprite
   })
-  public spriteHeroRank: Nullable<Sprite | null> = null;
+  public spriteHeroRank: Nullable<Sprite> = null;
+
+  @property({
+    type: Graphics
+  })
+  public graphicHeroPortrait: Nullable<Graphics> = null;
 
   public heroViewModel: Nullable<HeroViewModel> = null;
 
@@ -40,6 +45,7 @@ export class HeroView extends Component {
 
   protected onDestroy(): void {
     this._subscription?.unsubscribe();
+    this.node.off(Input.EventType.TOUCH_END, this.onTouchEndEvent, this);
   }
 
   /// Subscriber Methods
@@ -67,5 +73,38 @@ export class HeroView extends Component {
     if (opacityComp) {
       opacityComp.opacity = 255;
     }
+
+    this.addTouchListener();
+  }
+
+  private highlightPortrait(visible: boolean = true): void {
+    const ctx = this.graphicHeroPortrait;
+
+    if (!ctx) {
+      return;
+    }
+
+    ctx.clear();
+
+    if (visible) {
+      const transformComp = this.node.getComponent(UITransform);
+      const width = (transformComp?.width ?? 100) - 5;
+      const height = (transformComp?.height ?? 105) - 5;
+
+      ctx.lineWidth = 8;
+      ctx.rect(-width / 2, -height / 2, width, height);
+      ctx.stroke();
+    }
+  }
+
+  /// Event Callbacks
+  private addTouchListener(): void {
+    this.node.off(Input.EventType.TOUCH_END, this.onTouchEndEvent, this);
+    this.node.on(Input.EventType.TOUCH_END, this.onTouchEndEvent, this);
+  }
+
+  private onTouchEndEvent(event: EventTouch) {
+    event.propagationStopped = true;
+    this.highlightPortrait();
   }
 }
