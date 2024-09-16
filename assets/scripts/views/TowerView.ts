@@ -4,6 +4,8 @@ import { Subscription } from "rxjs";
 import { IBuildingInfo, IHero, Nullable } from "../common/types";
 import { HeroViewModel } from "../viewmodels/HeroViewModel";
 import { HeroView } from "./HeroView";
+import { SummonHeroView } from "./SummonHeroView";
+import { SummonHeroViewModel } from "../viewmodels/SummonHeroViewModel";
 const { ccclass, property } = _decorator;
 
 @ccclass("TowerView")
@@ -35,6 +37,11 @@ export class TowerView extends Component {
     type: Prefab
   })
   public prefabHero: Nullable<Prefab> = null;
+
+  @property({
+    type: Prefab
+  })
+  public prefabSummonHero: Nullable<Prefab> = null;
 
   @property({
     type: Button
@@ -107,6 +114,7 @@ export class TowerView extends Component {
       return;
     }
     this.updateBuildingDetails(building);
+    this.renderSummonQueue();
   }
 
   private onNewHeroes(heroes: IHero[]) {
@@ -136,6 +144,35 @@ export class TowerView extends Component {
     this.labelPanelDesc!.string = building.description;
   }
 
+  private renderSummonQueue(): void {
+    this.layoutSummonQueue!.node.removeAllChildren();
+
+    const queueSize = this._towerViewModel?.geSummonQueueSize() || 0;
+
+    for (let i = 0; i < queueSize; i++) {
+      this.instantiateSummonHero();
+    }
+  }
+
+  private instantiateSummonHero() {
+    if (!this.prefabSummonHero) {
+      warn("TowerView instantiateSummonHero(): prefabSummonHero is null");
+      return;
+    }
+
+    const summonHeroNode: Node = instantiate(this.prefabSummonHero);
+    this.layoutSummonQueue!.node.addChild(summonHeroNode);
+  }
+
+  private updateSummonHeroDetails(summonHeroNode: Node, hero: IHero): void {
+    const summonHeroView = summonHeroNode.getComponent(SummonHeroView);
+
+    if (summonHeroView) {
+      const summonHeroViewModel = new SummonHeroViewModel(hero);
+      summonHeroView.setViewModel(summonHeroViewModel);
+    }
+  }
+
   private updateHeroesList(heroes: IHero[]) {
     heroes.forEach(this.instantiateHero, this);
   }
@@ -159,7 +196,7 @@ export class TowerView extends Component {
   private resetUI(): void {
     this.labelPanelTitle!.string = "";
     this.labelPanelDesc!.string = "";
-    // this.layoutSummonQueue!.node.removeAllChildren(); // !_DEBUG_
+    this.layoutSummonQueue!.node.removeAllChildren();
     this.layoutHeroesList!.node.removeAllChildren();
 
     this.resetHireButton();

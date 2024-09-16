@@ -36,19 +36,6 @@ export class SummonHeroView extends Component {
 
   /// Lifecycle Methods
   protected onLoad(): void {
-    // !_DEBUG_
-    this.setViewModel(
-      new SummonHeroViewModel({
-        id: "hero_5",
-        name: "",
-        description: "",
-        cost: 200,
-        summonCoolDown: 8,
-        type: "water",
-        rank: "a"
-      })
-    );
-
     this.subscribeEvents();
   }
 

@@ -63,6 +63,10 @@ export class TowerModel {
     });
   }
 
+  public getHireSlots(): number {
+    return this._buildingInfo$?.value?.hireSlots ?? 0;
+  }
+
   /// Helper Methods
   private createHeroModel(hero: any): HeroModel {
     const heroModelData: IHero = {

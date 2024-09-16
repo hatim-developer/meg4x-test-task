@@ -2602,6 +2602,10 @@
       "__uuid__": "d010c788-2432-4904-b33c-ae08f5332ec6",
       "__expectedType__": "cc.Prefab"
     },
+    "prefabSummonHero": {
+      "__uuid__": "34f1f541-fe5b-4ac5-a1bb-04d10bc43f0b",
+      "__expectedType__": "cc.Prefab"
+    },
     "buttonHire": {
       "__id__": 80
     },

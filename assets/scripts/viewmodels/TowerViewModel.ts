@@ -36,4 +36,8 @@ export class TowerViewModel {
   public deselectHero(): void {
     this.towerStore.deselectHero();
   }
+
+  public geSummonQueueSize(): number {
+    return this.towerModel.getHireSlots();
+  }
 }
