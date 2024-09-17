@@ -4,10 +4,12 @@ import { TowerStore } from "../stores/TowerStore";
 import { BehaviorSubject } from "rxjs";
 import HeroModel from "../models/HeroModel";
 import { Nullable } from "../common/types";
+import { PlayerStore } from "../stores/PlayerStore";
 
 export class TowerViewModel {
   private towerModel: TowerModel;
   private towerStore: TowerStore;
+  private playerStore: PlayerStore;
 
   private _summonHeroesQueue$: BehaviorSubject<HeroModel[]>;
 
@@ -17,6 +19,9 @@ export class TowerViewModel {
 
     // * shared TowerStore instance
     this.towerStore = TowerStore.getInstance();
+
+    // * shared PlayerStore instance
+    this.playerStore = PlayerStore.getInstance();
 
     // * queue of active hired heroes, only required by view
     this._summonHeroesQueue$ = new BehaviorSubject<HeroModel[]>([]);
@@ -72,10 +77,7 @@ export class TowerViewModel {
   }
 
   public canHireHero(heroCost: number): boolean {
-    // TODO: Get it from player store
-    const globalCurrency = 200;
-
-    return heroCost <= globalCurrency && this.getHiredQueueSize() < this.getMaxHireSlots();
+    return this.playerStore.hasCurrency(heroCost) && this.getHiredQueueSize() < this.getMaxHireSlots();
   }
 
   public getHiredQueueSize(): number {
@@ -100,6 +102,9 @@ export class TowerViewModel {
 
     // deselect hero first
     this.deselectHero();
+
+    // deduct player currency
+    this.playerStore.deductCurrency(selectedHero.cost);
 
     // push hero to queue
     hiredHeroes.push(selectedHero);

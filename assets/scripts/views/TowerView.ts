@@ -86,11 +86,10 @@ export class TowerView extends Component {
     this._subscription = [];
 
     this.resetUI();
+    this.subscribeEvents();
   }
 
   start() {
-    this.subscribeEvents();
-
     // * Global touch event to handle to deselect hero & close panel ui
     input.on(Input.EventType.TOUCH_END, this.onTouchEndEvent, this);
   }
