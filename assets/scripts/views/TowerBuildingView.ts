@@ -7,7 +7,9 @@ const { ccclass, property } = _decorator;
 @ccclass("TowerBuildingView")
 export class TowerBuildingView extends Component {
   private _towerBuildingViewModel?: TowerBuildingViewModel;
-  private _subscription?: Subscription;
+
+  private _towerUISub: Nullable<Subscription> = null;
+  private _summoningSub: Nullable<Subscription> = null;
 
   @property({
     type: Sprite
@@ -19,35 +21,56 @@ export class TowerBuildingView extends Component {
     // * instantiate CurrencyVM
     this._towerBuildingViewModel = new TowerBuildingViewModel();
 
-    // * listen to building click
-    this.node.on(Input.EventType.TOUCH_END, this.onTowerBuildingClick, this);
+    this._towerUISub = null;
+    this._summoningSub = null;
+
+    this.subscribeEvents();
   }
 
   start() {
-    this.subscribeEvents();
+    // * listen to building click
+    this.node.on(Input.EventType.TOUCH_END, this.onTowerBuildingClick, this);
   }
 
   update(deltaTime: number) {}
 
   protected onDestroy(): void {
     // * subscription cleanup
-    this._subscription?.unsubscribe();
+    this._towerUISub?.unsubscribe();
+    this._summoningSub?.unsubscribe();
 
     this.node.off(Input.EventType.TOUCH_END, this.onTowerBuildingClick, this);
   }
 
   /// Subscriptions
   private subscribeEvents(): void {
-    this._subscription = this._towerBuildingViewModel?.getSummoningObservable().subscribe((isSummoning: boolean) => {
-      this.onSummoningStateChange(isSummoning);
-    });
+    if (this._towerBuildingViewModel) {
+      // subscribe to tower ui activation event
+      this._towerUISub = this._towerBuildingViewModel.getActivateTowerObservable().subscribe((towerShown) => {
+        if (towerShown) {
+          this._summoningSub?.unsubscribe();
+          this.showSummonIcon(false);
+          return;
+        }
+
+        // subscribe to summoning only if tower ui deactivated
+        this.subscribeToSummoningState();
+      });
+    }
+  }
+
+  private subscribeToSummoningState() {
+    if (this._towerBuildingViewModel) {
+      this._summoningSub = this._towerBuildingViewModel?.getSummoningObservable().subscribe((isSummoning: boolean) => {
+        this.showSummonIcon(isSummoning);
+      });
+    }
   }
 
   /// UI Methods
-  private onSummoningStateChange(isSummoning: boolean) {
-    // TODO: Show only if TowerUI is hidden
+  private showSummonIcon(visibility: boolean) {
     if (this.spriteSummoningIcon) {
-      this.spriteSummoningIcon.node.active = isSummoning;
+      this.spriteSummoningIcon.node.active = visibility;
     }
   }
 
