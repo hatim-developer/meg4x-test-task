@@ -1,4 +1,4 @@
-import { _decorator, Component, Label, log, Sprite, UIOpacity } from "cc";
+import { _decorator, Component, Label, log, Sprite } from "cc";
 import { EHeroSprite, Nullable, TSpriteFrameDict } from "../common/types";
 import { Subscription } from "rxjs";
 import { HeroDetailsContainerViewModel } from "../viewmodels/HeroDetailsContainerViewModel";
@@ -67,6 +67,9 @@ export class HeroDetailsContainerView extends Component {
   protected onLoad(): void {
     this.subscribeEvents();
   }
+  protected start(): void {
+    this.updateHeroDetails();
+  }
 
   private subscribeEvents(): void {
     if (this._heroDetailsViewModel) {
@@ -93,7 +96,6 @@ export class HeroDetailsContainerView extends Component {
     log("HeroDetailsContainerView: Frames loaded", spriteFramesDict); // __DEBUG__
 
     this.updateSpriteFrames(spriteFramesDict);
-    this.activate();
   }
 
   /// UI Methods
@@ -111,11 +113,36 @@ export class HeroDetailsContainerView extends Component {
     }
   }
 
-  private activate(): void {
-    const opacityComp = this.node?.getComponent(UIOpacity);
+  private updateHeroDetails() {
+    const heroDetails = this._heroDetailsViewModel?.getHeroDetails();
 
-    if (opacityComp) {
-      opacityComp.opacity = 255;
+    if (!heroDetails) {
+      log("HeroDetailsContainerView: updateHeroDetails details not available "); // __DEBUG__
+      return;
+    }
+
+    if (this.labelHeroName) {
+      this.labelHeroName.string = heroDetails.name;
+    }
+
+    if (this.labelHeroDesc) {
+      this.labelHeroDesc.string = heroDetails.description;
+    }
+
+    if (this.labelHeroCost) {
+      this.labelHeroCost.string = `Cost: ${heroDetails.cost}`;
+    }
+
+    if (this.labelHeroRank) {
+      this.labelHeroRank.string = `Rank: ${heroDetails.rank.toUpperCase()}`;
+    }
+
+    if (this.labelHeroType) {
+      this.labelHeroType.string = `Type: ${heroDetails.type.toUpperCase()}`;
+    }
+
+    if (this.labelHeroTime) {
+      this.labelHeroTime.string = `Summon Time: ${heroDetails.summonCoolDown}s`;
     }
   }
 }

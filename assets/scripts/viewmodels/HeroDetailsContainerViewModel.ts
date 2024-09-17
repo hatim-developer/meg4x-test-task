@@ -47,4 +47,8 @@ export class HeroDetailsContainerViewModel {
   public getSpriteFramesObservable() {
     return this._spriteFrames$.asObservable();
   }
+
+  public getHeroDetails() {
+    return this._heroModel;
+  }
 }
