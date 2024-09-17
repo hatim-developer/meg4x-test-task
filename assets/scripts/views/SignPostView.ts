@@ -37,7 +37,7 @@ export class SignPostView extends Component {
     // * subscription cleanup
     this._subscription?.unsubscribe();
 
-    this.node.on(Input.EventType.TOUCH_END, this.onSignPostIconClick, this);
+    this.node.off(Input.EventType.TOUCH_END, this.onSignPostIconClick, this);
   }
 
   /// Subscriptions
