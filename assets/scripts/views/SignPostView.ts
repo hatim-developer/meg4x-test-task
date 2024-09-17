@@ -1,4 +1,4 @@
-import { _decorator, Component, Label, Node, Sprite } from "cc";
+import { _decorator, Component, EventTouch, Input, Label, log, Node, Sprite } from "cc";
 import { Nullable } from "../common/types";
 import { SignPostViewModel } from "../viewmodels/SignPostViewModel";
 import { Subscription } from "rxjs";
@@ -27,6 +27,8 @@ export class SignPostView extends Component {
 
   start() {
     this.subscribeEvents();
+
+    this.node.on(Input.EventType.TOUCH_END, this.onSignPostIconClick, this);
   }
 
   update(deltaTime: number) {}
@@ -34,6 +36,8 @@ export class SignPostView extends Component {
   protected onDestroy(): void {
     // * subscription cleanup
     this._subscription?.unsubscribe();
+
+    this.node.on(Input.EventType.TOUCH_END, this.onSignPostIconClick, this);
   }
 
   /// Subscriptions
@@ -55,5 +59,11 @@ export class SignPostView extends Component {
     if (this.spriteBadgeBg) {
       this.spriteBadgeBg.node.active = visibility;
     }
+  }
+
+  /// Event Listeners
+  private onSignPostIconClick(event: EventTouch): void {
+    event.propagationStopped = true;
+    log("SignPostView onSignPostIconClick()"); // !_DEBUG
   }
 }

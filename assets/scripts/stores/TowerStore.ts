@@ -6,6 +6,7 @@ export class TowerStore {
   private static _instance: TowerStore;
   private selectedHero$: BehaviorSubject<Nullable<IHero>>;
   private isSummoning$: BehaviorSubject<boolean>;
+  private activateTower$: BehaviorSubject<boolean>;
 
   private constructor() {
     // * shared selectedHero state
@@ -13,6 +14,9 @@ export class TowerStore {
 
     // * shared summoning hero state
     this.isSummoning$ = new BehaviorSubject<boolean>(false);
+
+    // * shared tower activation state
+    this.activateTower$ = new BehaviorSubject<boolean>(false);
   }
 
   public static getInstance() {
@@ -65,5 +69,23 @@ export class TowerStore {
 
   isSummoningHero() {
     return this.isSummoning$.value;
+  }
+
+  /// activateTower$ Methods
+  activateTower(): void {
+    if (this.activateTower$.value) {
+      return;
+    }
+    this.activateTower$.next(true);
+  }
+
+  deactivateTower(): void {
+    if (this.activateTower$.value) {
+      this.activateTower$.next(false);
+    }
+  }
+
+  getActivateTowerObservable() {
+    return this.activateTower$.asObservable();
   }
 }

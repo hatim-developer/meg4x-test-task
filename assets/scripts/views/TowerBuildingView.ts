@@ -1,4 +1,4 @@
-import { _decorator, Component, Sprite } from "cc";
+import { _decorator, Component, EventTouch, Input, log, Sprite } from "cc";
 import { Nullable } from "../common/types";
 import { TowerBuildingViewModel } from "../viewmodels/TowerBuildingViewModel";
 import { Subscription } from "rxjs";
@@ -18,6 +18,9 @@ export class TowerBuildingView extends Component {
   protected onLoad(): void {
     // * instantiate CurrencyVM
     this._towerBuildingViewModel = new TowerBuildingViewModel();
+
+    // * listen to building click
+    this.node.on(Input.EventType.TOUCH_END, this.onTowerBuildingClick, this);
   }
 
   start() {
@@ -29,6 +32,8 @@ export class TowerBuildingView extends Component {
   protected onDestroy(): void {
     // * subscription cleanup
     this._subscription?.unsubscribe();
+
+    this.node.off(Input.EventType.TOUCH_END, this.onTowerBuildingClick, this);
   }
 
   /// Subscriptions
@@ -44,5 +49,13 @@ export class TowerBuildingView extends Component {
     if (this.spriteSummoningIcon) {
       this.spriteSummoningIcon.node.active = isSummoning;
     }
+  }
+
+  // Event Listeners
+  private onTowerBuildingClick(event: EventTouch): void {
+    event.propagationStopped = true;
+    log("TowerBuildingView onTowerBuildingClick()"); // !_DEBUG
+
+    this._towerBuildingViewModel?.showTowerPanel();
   }
 }

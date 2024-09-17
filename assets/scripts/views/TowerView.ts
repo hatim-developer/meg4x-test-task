@@ -1,21 +1,4 @@
-import {
-  _decorator,
-  Button,
-  Component,
-  instantiate,
-  Label,
-  Layout,
-  Prefab,
-  Sprite,
-  UIOpacity,
-  warn,
-  Node,
-  Input,
-  log,
-  EventTouch,
-  input,
-  Color
-} from "cc";
+import { _decorator, Button, Component, instantiate, Label, Layout, Prefab, Sprite, UIOpacity, warn, Node, Input, log, EventTouch, Color } from "cc";
 import { TowerViewModel } from "../viewmodels/TowerViewModel";
 import { Subscription } from "rxjs";
 import { IBuildingInfo, IHero, Nullable } from "../common/types";
@@ -29,6 +12,16 @@ const { ccclass, property } = _decorator;
 export class TowerView extends Component {
   private _towerViewModel?: TowerViewModel;
   private _subscription: Subscription[] = [];
+
+  @property({
+    type: Node
+  })
+  public blockTouchNode: Nullable<Node> = null;
+
+  @property({
+    type: Node
+  })
+  public towerPanelNode: Nullable<Node> = null;
 
   @property({
     type: Label
@@ -90,8 +83,26 @@ export class TowerView extends Component {
   }
 
   start() {
-    // * Global touch event to handle to deselect hero & close panel ui
-    input.on(Input.EventType.TOUCH_END, this.onTouchEndEvent, this);
+    this.addTouchListeners();
+  }
+
+  private addTouchListeners(): void {
+    // to listen outside clicks
+    if (this.towerPanelNode && this.blockTouchNode) {
+      this.blockTouchNode.on(Input.EventType.TOUCH_START, this.onBlockTouchNodeClick, this);
+
+      this.towerPanelNode.on(Input.EventType.TOUCH_START, this.onTowerPanelNodeClick, this);
+    }
+  }
+
+  private cleanTouchListeners(): void {
+    this.enableHireButtonTouchListener(false);
+
+    if (this.towerPanelNode && this.blockTouchNode) {
+      this.blockTouchNode.off(Input.EventType.TOUCH_START, this.onBlockTouchNodeClick, this);
+
+      this.towerPanelNode.off(Input.EventType.TOUCH_START, this.onTowerPanelNodeClick, this);
+    }
   }
 
   update(deltaTime: number) {}
@@ -101,11 +112,15 @@ export class TowerView extends Component {
     this._subscription.forEach((sub) => sub.unsubscribe);
 
     // * Touch listeners cleanup
-    input.off(Input.EventType.TOUCH_END, this.onTouchEndEvent, this);
-    this.enableHireButtonTouchListener(false);
+    this.cleanTouchListeners();
   }
 
+  /// Subscriptions
   private subscribeEvents(): void {
+    const activateTowerSub = this.towerViewModel.getActivateTowerObservable().subscribe((show) => {
+      this.onTowerUIRequest(show);
+    });
+
     const buildingInfoSub = this.towerViewModel.getBuildingInfoObservable().subscribe((info) => {
       this.onNewBuildingInfo(info);
     });
@@ -123,7 +138,7 @@ export class TowerView extends Component {
     });
 
     // * save subscriptions for cleaning
-    this._subscription.push(buildingInfoSub, heroesListSub, selectedHeroSub, summonHeroesQueueSub);
+    this._subscription.push(activateTowerSub, buildingInfoSub, heroesListSub, selectedHeroSub, summonHeroesQueueSub);
   }
 
   /// Subscriber Methods
@@ -163,6 +178,28 @@ export class TowerView extends Component {
   }
 
   /// UI Methods
+  private onTowerUIRequest(show: boolean) {
+    if (show) {
+      this.showTowerPanel();
+    } else {
+      this.closeTowerPanel();
+    }
+  }
+  private showTowerPanel(): void {
+    // TODO: Add slide in animation
+    this.node.active = true;
+  }
+
+  private closeTowerPanel(): void {
+    // deselect hero
+    if (this._towerViewModel) {
+      this._towerViewModel.deselectHero();
+    }
+
+    // TODO: Add slide out animation
+    this.node.active = false;
+  }
+
   private updateBuildingDetails(building: IBuildingInfo): void {
     console.log("TowerView updatingBuildingInfo() : info", building); // _DEBUG_
     this.labelPanelTitle!.string = building.name;
@@ -298,14 +335,18 @@ export class TowerView extends Component {
     this._towerViewModel?.hireHero();
   }
 
-  private onTouchEndEvent(event: EventTouch): void {
-    event.propagationStopped = true;
-    log("TowerView onTouchEndEvent()"); // !_DEBUG_
+  private onBlockTouchNodeClick(event: EventTouch): void {
+    log("TowerView onBlockTouchNodeClick()"); // !_DEBUG_
 
-    // deselect hero on click outside of hero | hire button
-    if (this._towerViewModel) {
-      this._towerViewModel.deselectHero();
-    }
-    // TODO: __HANDLE_CASE__ close TowerUi panel on click outside
+    /** this is only called if clicked outside panel
+     * added BlockInputEvents comp which blocks all events to lower layers
+     * event.propagationStopped = true not required */
+    this._towerViewModel?.clickedOutOfPanel();
+  }
+
+  private onTowerPanelNodeClick(event: EventTouch): void {
+    // block event to blockTouchNode, prevents closing of panel
+    event.propagationStopped = true;
+    log("TowerView onTowerPanelNodeClick()"); // !_DEBUG_
   }
 }

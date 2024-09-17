@@ -53,6 +53,10 @@ export class TowerViewModel {
     return this._summonHeroesQueue$.asObservable();
   }
 
+  public getActivateTowerObservable() {
+    return this.towerStore.getActivateTowerObservable();
+  }
+
   /// Subscription Methods
   private subscribeEvents(): void {
     this.towerStore.getIsSummoningObservable().subscribe((summoning) => {
@@ -64,6 +68,7 @@ export class TowerViewModel {
     });
   }
 
+  /// Hero select methods
   public getSelectedHero() {
     return this.towerStore.getSelectedHero();
   }
@@ -111,6 +116,7 @@ export class TowerViewModel {
     this._summonHeroesQueue$.next(hiredHeroes);
   }
 
+  /// Hero summoning methods
   public checkSummonHero(): void {
     const queue = this._summonHeroesQueue$.value;
 
@@ -129,5 +135,10 @@ export class TowerViewModel {
       // * Hero ready for battle - save to player global state
       this.playerStore.pushHero(hero);
     }
+  }
+
+  /// Tower methods
+  public clickedOutOfPanel(): void {
+    this.towerStore.deactivateTower();
   }
 }

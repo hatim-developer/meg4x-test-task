@@ -11,4 +11,8 @@ export class TowerBuildingViewModel {
   public getSummoningObservable() {
     return this._towerStore.getIsSummoningObservable();
   }
+
+  public showTowerPanel() {
+    return this._towerStore.activateTower();
+  }
 }
