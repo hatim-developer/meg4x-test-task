@@ -126,8 +126,8 @@ export class TowerViewModel {
     this._summonHeroesQueue$.next(queue);
 
     if (hero) {
-      /// TODO: Send this guy to global player heroes list
-      console.warn("TowerVM TODO: shiftSummonHero() send hero to player heroes list");
+      // * Hero ready for battle - save to player global state
+      this.playerStore.pushHero(hero);
     }
   }
 }

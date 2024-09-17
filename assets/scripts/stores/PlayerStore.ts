@@ -1,13 +1,18 @@
 import { BehaviorSubject } from "rxjs";
+import { IHero } from "../common/types";
 
 /// Singleton Store
 export class PlayerStore {
   private static _instance: PlayerStore;
   private _currency$: BehaviorSubject<number>;
+  private _heroes$: BehaviorSubject<IHero[]>;
 
   private constructor() {
     // * shared player global currency state
     this._currency$ = new BehaviorSubject<number>(9999999);
+
+    // * list of hired summoned heroes global state
+    this._heroes$ = new BehaviorSubject<IHero[]>([]);
   }
 
   public static getInstance() {
@@ -40,5 +45,16 @@ export class PlayerStore {
 
   public hasCurrency(amount: number): boolean {
     return this._currency$.value >= amount;
+  }
+
+  /// _heroes$ Methods
+  public getHeroesObservable() {
+    return this._heroes$.asObservable();
+  }
+
+  public pushHero(hero: IHero) {
+    const heroes = this._heroes$.value;
+    heroes.push(hero);
+    return this._heroes$.next(heroes);
   }
 }
