@@ -1,58 +1,76 @@
 {
-    "heroes":[
-        {
-            "id":"hero_1",
-            "name":"Thaldir the Valiant",
-            "description":"A mighty warrior capable of dealing massive damage to enemies",
-            "cost":299,
-            "summonCooldown": 10,
-            "type": "earth",
-            "rank": "a"
-        },
-        {
-            "id":"hero_2",
-            "name":"Lyra Stormblade",
-            "description":"A powerful mage capable of casting powerful spells",
-            "cost":100,
-            "summonCooldown": 2,
-            "type": "water",
-            "rank": "d"
-        },
-        {
-            "id":"hero_3",
-            "name":"Gareth Ironheart",
-            "description":"A skilled lancer capable of dealing damage from a distance",
-            "cost":200,
-            "summonCooldown": 8,
-            "type": "fire",
-            "rank": "b"
-        },
-        {
-            "id":"hero_4",
-            "name":"Elowen Swiftshadow",
-            "description":"A dark gunslinger capable of high accurancy and reviving fallen heroes",
-            "cost":150,
-            "summonCooldown": 5,
-            "type": "earth",
-            "rank": "c"
-        },
-        {
-            "id":"hero_5",
-            "name":"Caelan Fireforge",
-            "description":"A tank capable of absorbing damage and protecting allies",
-            "cost":200,
-            "summonCooldown": 8,
-            "type": "earth",
-            "rank": "b"
-        },
-        {
-            "id":"hero_6",
-            "name":"Isolde Moonwhisper",
-            "description":"A sacred mayan capable of dealing critical damage and evading attacks",
-            "cost":500,
-            "summonCooldown": 15,
-            "type": "wind",
-            "rank": "s"
-        }
-    ]
+  "heroes": [
+    {
+      "id": "hero_1",
+      "name": "Thaldir the Valiant",
+      "description": "A mighty warrior capable of dealing massive damage to enemies",
+      "cost": 299,
+      "summonCooldown": 10,
+      "type": "earth",
+      "rank": "a"
+    },
+    {
+      "id": "hero_2",
+      "name": "Lyra Stormblade",
+      "description": "A powerful mage capable of casting powerful spells",
+      "cost": 100,
+      "summonCooldown": 2,
+      "type": "water",
+      "rank": "d"
+    },
+    {
+      "id": "hero_3",
+      "name": "Gareth Ironheart",
+      "description": "A skilled lancer capable of dealing damage from a distance",
+      "cost": 200,
+      "summonCooldown": 8,
+      "type": "fire",
+      "rank": "b"
+    },
+    {
+      "id": "hero_4",
+      "name": "Elowen Swiftshadow",
+      "description": "A dark gunslinger capable of high accurancy and reviving fallen heroes",
+      "cost": 150,
+      "summonCooldown": 5,
+      "type": "earth",
+      "rank": "c"
+    },
+    {
+      "id": "hero_5",
+      "name": "Caelan Fireforge",
+      "description": "A tank capable of absorbing damage and protecting allies",
+      "cost": 200,
+      "summonCooldown": 8,
+      "type": "earth",
+      "rank": "b"
+    },
+    {
+      "id": "hero_6",
+      "name": "Isolde Moonwhisper",
+      "description": "A sacred mayan capable of dealing critical damage and evading attacks",
+      "cost": 500,
+      "summonCooldown": 15,
+      "type": "wind",
+      "rank": "s"
+    },
+    {
+      "id": "hero_7",
+      "name": "Thaldir the Valiant II",
+      "description": "A mighty warrior capable of dealing massive damage to enemies",
+      "cost": 499,
+      "summonCooldown": 15,
+      "type": "earth",
+      "rank": "a"
+    },
+    {
+      "id": "hero_8",
+      "name": "Elowen Swiftshadow II",
+      "description": "A dark gunslinger capable of high accurancy and reviving fallen heroes",
+      "cost": 399,
+      "summonCooldown": 12,
+      "type": "earth",
+      "rank": "c"
+    }
+  ]
 }
