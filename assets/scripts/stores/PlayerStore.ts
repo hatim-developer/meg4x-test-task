@@ -1,5 +1,6 @@
 import { BehaviorSubject } from "rxjs";
-import { IHero } from "../common/types";
+import { IHero, IPlayerInitialState } from "../common/types";
+import { fetchPlayerInitialState } from "../apis/PlayerStateApi";
 
 /// Singleton Store
 export class PlayerStore {
@@ -10,20 +11,31 @@ export class PlayerStore {
 
   private constructor() {
     // * shared player global currency state
-    this._currency$ = new BehaviorSubject<number>(9999999);
+    this._currency$ = new BehaviorSubject<number>(0);
 
     // * list of hired summoned heroes global state
     this._heroes$ = new BehaviorSubject<IHero[]>([]);
 
     // * current selected building global state by player
-    this._buildingId$ = new BehaviorSubject<string>("hire_tower");
+    this._buildingId$ = new BehaviorSubject<string>("");
   }
 
   public static getInstance() {
     if (!PlayerStore._instance) {
       PlayerStore._instance = new PlayerStore();
+
+      /// TODO: move it to preloading game state for optimization
+      PlayerStore._instance.loadInitialState();
     }
     return PlayerStore._instance;
+  }
+
+  public loadInitialState() {
+    fetchPlayerInitialState().subscribe((state: IPlayerInitialState) => {
+      this.setCurrency(state.currency);
+      this.setHeroesInitialState(state.heroes);
+      this.setBuildingId(state.buildings.pop() || "hire-tower");
+    });
   }
 
   /// _currency$ Methods
@@ -52,6 +64,10 @@ export class PlayerStore {
   }
 
   /// _heroes$ Methods
+  private setHeroesInitialState(heroes: []): void {
+    this._heroes$.next(heroes);
+  }
+
   public getHeroesObservable() {
     return this._heroes$.asObservable();
   }
@@ -65,5 +81,9 @@ export class PlayerStore {
   /// _buildingId$ Methods
   public getBuildingObservable() {
     return this._buildingId$.asObservable();
+  }
+
+  public setBuildingId(buildingId: string) {
+    this._buildingId$.next(buildingId);
   }
 }

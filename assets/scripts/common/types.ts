@@ -1,4 +1,10 @@
 import { SpriteFrame } from "cc";
+export interface IPlayerInitialState {
+  currency: number;
+  buildings: string[];
+  heroes: [];
+}
+
 export interface IHero {
   readonly id: string;
   readonly name: string;
