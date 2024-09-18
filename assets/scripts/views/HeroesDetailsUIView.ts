@@ -97,6 +97,10 @@ export class HeroesDetailsUIView extends Component {
 
   private resetUI(): void {
     this.layoutContent!.node.removeAllChildren();
+
+    if (this.labelInfo) {
+      this.labelInfo.node.active = true;
+    }
   }
 
   private updateHeroesList(heroes: IHero[]) {
@@ -105,12 +109,14 @@ export class HeroesDetailsUIView extends Component {
       return;
     }
 
-    const children = this.layoutContent.node.children;
-    const newHeroesCount = heroes.length - children.length;
+    const heroesLen = heroes.length;
+    const childrenLen = this.layoutContent.node.children.length;
 
-    if (newHeroesCount < 1) {
-      if (children.length === 0 && this.labelInfo) {
-        this.labelInfo.node.active = true;
+    // CASE: if empty heroes list removing all children
+    if (heroesLen === 0) {
+      if (childrenLen) {
+        warn("HeroesDetailsUIView updateHeroesList(): you cleared all player heroes are you sure? ignore if intentional");
+        this.resetUI();
       }
       return;
     }
@@ -120,7 +126,7 @@ export class HeroesDetailsUIView extends Component {
     }
 
     // update only new heroes
-    for (let i = heroes.length - newHeroesCount; i < heroes.length; i++) {
+    for (let i = childrenLen; i < heroesLen; i++) {
       this.instantiateHeroContainer(heroes[i]);
     }
   }
