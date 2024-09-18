@@ -1,4 +1,21 @@
-import { _decorator, Button, Component, EventTouch, Input, instantiate, Node, Layout, log, Prefab, warn, Label } from "cc";
+import {
+  _decorator,
+  Button,
+  Component,
+  EventTouch,
+  Input,
+  instantiate,
+  Node,
+  Layout,
+  log,
+  Prefab,
+  warn,
+  Label,
+  UITransform,
+  Vec3,
+  view,
+  tween
+} from "cc";
 import { IHero, Nullable } from "../common/types";
 import { HeroesDetailsUIViewModel } from "../viewmodels/HeroesDetailsUIViewModel";
 import { Subscription } from "rxjs";
@@ -30,6 +47,11 @@ export class HeroesDetailsUIView extends Component {
     type: Label
   })
   public labelInfo: Nullable<Label> = null;
+
+  @property({
+    type: Node
+  })
+  public panelNode: Nullable<Node> = null;
 
   /// Lifecycle Methods
   protected onLoad(): void {
@@ -75,19 +97,45 @@ export class HeroesDetailsUIView extends Component {
   /// UI Methods
   private onPanelUIRequest(show: boolean) {
     if (show) {
-      this.showTowerPanel();
+      this.showDetailsPanel();
     } else {
-      this.closeTowerPanel();
+      this.closeDetailsPanel();
     }
   }
-  private showTowerPanel(): void {
-    // TODO: Add slide in animation
-    this.node.active = true;
+  private showDetailsPanel(): void {
+    // activate node first
+    this.handleNodeVisibility(true);
+
+    if (this.panelNode) {
+      this.startSlideAnimation(this.panelNode, this.getPanelTargetPos(), () => {
+        this.handleNodeVisibility(true);
+      });
+    }
   }
 
-  private closeTowerPanel(): void {
-    // TODO: Add slide out animation
-    this.node.active = false;
+  private closeDetailsPanel(): void {
+    if (this.panelNode) {
+      this.startSlideAnimation(this.panelNode, this.getPanelTargetPos(true), () => {
+        // remove node from rendering tree
+        this.handleNodeVisibility(false);
+      });
+    }
+  }
+
+  private startSlideAnimation(target: Node, targetPos: Vec3, onComplete?: Function): void {
+    tween(target)
+      .to(0.25, { position: targetPos })
+      .call(() => {
+        if (onComplete) {
+          onComplete();
+        }
+      })
+      .start();
+  }
+
+  handleNodeVisibility(active: boolean): void {
+    log("HeroDetailsUIView handleNodeVisibility() node active:", active); // !_DEBUG_
+    this.node.active = active;
   }
 
   private onHeroesStateChange(heroes: IHero[]) {
@@ -101,6 +149,10 @@ export class HeroesDetailsUIView extends Component {
     if (this.labelInfo) {
       this.labelInfo.node.active = true;
     }
+
+    this.node.setPosition(Vec3.ZERO); // place node in center of screen
+    this.panelNode?.setPosition(this.getPanelTargetPos(true));
+    this.handleNodeVisibility(false);
   }
 
   private updateHeroesList(heroes: IHero[]) {
@@ -153,5 +205,26 @@ export class HeroesDetailsUIView extends Component {
     log("HeroesDetailsUIView onCloseButtonClick()"); // !_DEBUG
 
     this._heroesDetailsUIViewModel?.closeButtonClick();
+  }
+
+  /// Helper Methods
+  private getPanelTargetPos(slideOut: boolean = false): Vec3 {
+    if (this.panelNode === null) {
+      warn("HeroDetailsUIView panelNode is null");
+      return Vec3.ZERO;
+    }
+
+    const gameHeight = view.getVisibleSize().height;
+    const transform = this.panelNode?.getComponent(UITransform);
+
+    // center of screen wrt parent - if you change parentY panel should still slide in at center
+    let targetPosY = this.node.position.y * -1; // center
+
+    if (transform && slideOut) {
+      // top + panel height position
+      targetPosY = gameHeight * 0.5 + this.node.position.y;
+      targetPosY += transform.height * transform.anchorY;
+    }
+    return new Vec3(0, targetPosY, 0);
   }
 }

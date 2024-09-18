@@ -2989,7 +2989,7 @@
     "_prefab": null,
     "_lpos": {
       "__type__": "cc.Vec3",
-      "x": 0,
+      "x": 1400,
       "y": 0,
       "z": 0
     },
@@ -4269,6 +4269,9 @@
     },
     "labelInfo": {
       "__id__": 138
+    },
+    "panelNode": {
+      "__id__": 122
     },
     "_id": "11M1vJyRpIybQg/nz6WlEg"
   },
