@@ -66,15 +66,11 @@ export class SummonHeroView extends Component {
 
   /// Subscriber Methods
   private onFramesLoad(spriteFramesDict: TSpriteFrameDict): void {
-    log("SummonHeroView: Frames loaded", spriteFramesDict); // __DEBUG__
-
     this.updateSpriteFrames(spriteFramesDict);
     this.activate();
   }
 
   private onSummonProgress(progress: number): void {
-    log("SummonHeroView: Summon progress: ", progress); // __DEBUG__
-
     if (this.progressBarSummon) {
       this.progressBarSummon.progress = progress;
     }

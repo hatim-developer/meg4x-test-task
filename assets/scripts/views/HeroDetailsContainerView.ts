@@ -93,8 +93,6 @@ export class HeroDetailsContainerView extends Component {
 
   /// Subscriber Methods
   private onFramesLoad(spriteFramesDict: TSpriteFrameDict): void {
-    log("HeroDetailsContainerView: Frames loaded", spriteFramesDict); // __DEBUG__
-
     this.updateSpriteFrames(spriteFramesDict);
   }
 
@@ -117,7 +115,6 @@ export class HeroDetailsContainerView extends Component {
     const heroDetails = this._heroDetailsViewModel?.getHeroDetails();
 
     if (!heroDetails) {
-      log("HeroDetailsContainerView: updateHeroDetails details not available "); // __DEBUG__
       return;
     }
 

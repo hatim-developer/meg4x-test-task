@@ -67,8 +67,6 @@ export class TowerViewModel {
     this.playerStore.getBuildingObservable().subscribe((building) => {
       if (building) {
         this.loadData(building);
-      } else {
-        warn("TowerVM:getBuildingObservable buildingId$ is missing", building);
       }
     });
   }

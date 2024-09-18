@@ -77,8 +77,6 @@ export class TowerBuildingView extends Component {
   // Event Listeners
   private onTowerBuildingClick(event: EventTouch): void {
     event.propagationStopped = true;
-    log("TowerBuildingView onTowerBuildingClick()"); // !_DEBUG
-
     this._towerBuildingViewModel?.showTowerPanel();
   }
 }

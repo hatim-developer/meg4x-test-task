@@ -64,8 +64,6 @@ export class SignPostView extends Component {
   /// Event Listeners
   private onSignPostIconClick(event: EventTouch): void {
     event.propagationStopped = true;
-    log("SignPostView onSignPostIconClick()"); // !_DEBUG
-
     this._signPostViewModel?.showHallOfHeroesPanel();
   }
 }

@@ -134,12 +134,10 @@ export class HeroesDetailsUIView extends Component {
   }
 
   handleNodeVisibility(active: boolean): void {
-    log("HeroDetailsUIView handleNodeVisibility() node active:", active); // !_DEBUG_
     this.node.active = active;
   }
 
   private onHeroesStateChange(heroes: IHero[]) {
-    log("HeroesDetailsUIView onHeroesStateChange()"); // !_DEBUG
     this.updateHeroesList(heroes);
   }
 
@@ -202,8 +200,6 @@ export class HeroesDetailsUIView extends Component {
   /// Event Listeners
   private onCloseButtonClick(event: EventTouch): void {
     event.propagationStopped = true;
-    log("HeroesDetailsUIView onCloseButtonClick()"); // !_DEBUG
-
     this._heroesDetailsUIViewModel?.closeButtonClick();
   }
 

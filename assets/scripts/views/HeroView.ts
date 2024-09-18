@@ -61,8 +61,6 @@ export class HeroView extends Component {
 
   /// Subscriber Methods
   private onFramesLoad(spriteFramesDict: TSpriteFrameDict): void {
-    log("HeroView: Frames loaded", spriteFramesDict); // __DEBUG__
-
     this.updateSpriteFrames(spriteFramesDict);
     this.activate();
   }

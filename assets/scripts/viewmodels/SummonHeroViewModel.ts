@@ -35,7 +35,6 @@ export class SummonHeroViewModel {
       return;
     }
 
-    warn("SummonHeroVM: TODO: resetHeroData()", this._heroModel);
     const resetFrames: TSpriteFrameDict = {
       [EHeroSprite.face]: undefined,
       [EHeroSprite.rank]: undefined,
@@ -54,7 +53,6 @@ export class SummonHeroViewModel {
 
   setHeroData(hero: IHero, canSummon: boolean) {
     if (this._heroModel && this._heroModel.id === hero.id) {
-      log("SummonHeroVM: setData() same hero assigned, id: ", hero.id);
       return;
     }
     this._heroModel = hero;
@@ -147,7 +145,6 @@ export class SummonHeroViewModel {
   }
 
   private onSummonComplete(): void {
-    log("SummonHeroVM summon completed", this._heroModel?.id);
     this._progressSubscription?.unsubscribe();
     this._progressSubscription = null;
     this._towerStore.clearSummoning();

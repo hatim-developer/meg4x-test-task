@@ -165,7 +165,6 @@ export class TowerView extends Component {
   private onNewBuildingInfo(building: Nullable<IBuildingInfo>) {
     if (building === null) {
       // TODO: _HANDLE_CASE_ : show loading state
-      console.warn("TowerView building info is null");
       return;
     }
     this.updateBuildingDetails(building);
@@ -174,7 +173,6 @@ export class TowerView extends Component {
 
   private onNewHeroes(heroes: IHero[]) {
     if (!heroes?.length) {
-      console.warn("TowerView no heroes to show");
       return;
     }
 
@@ -182,8 +180,6 @@ export class TowerView extends Component {
   }
 
   private onHeroSelect(hero: Nullable<IHero>) {
-    log("TowerView onHeroSelect", hero); // !__DEBUG__
-
     if (hero === null) {
       this.updateHireButton(false);
       return;
@@ -192,8 +188,6 @@ export class TowerView extends Component {
   }
 
   private onSummonQueueChange(summonQueue: IHero[]): void {
-    log("TowerView onSummonQueueChange():", summonQueue); // !__DEBUG__
-
     this.renderSummonQueueHeroes(summonQueue);
   }
 
@@ -242,12 +236,10 @@ export class TowerView extends Component {
   }
 
   handleNodeVisibility(active: boolean): void {
-    log("TowerView handleNodeVisibility() node active:", active); // !_DEBUG_
     this.node.active = active;
   }
 
   private updateBuildingDetails(building: IBuildingInfo): void {
-    console.log("TowerView updatingBuildingInfo() : info", building); // _DEBUG_
     this.labelPanelTitle!.string = building.name;
     this.labelPanelDesc!.string = building.description;
   }
@@ -378,15 +370,12 @@ export class TowerView extends Component {
 
   private onHireButtonClicked(event: EventTouch): void {
     event.propagationStopped = true;
-    log("TowerView onHireButtonClicked()"); // !_DEBUG
 
     // hire hero
     this._towerViewModel?.hireHero();
   }
 
   private onBlockTouchNodeClick(event: EventTouch): void {
-    log("TowerView onBlockTouchNodeClick()"); // !_DEBUG_
-
     /** this is only called if clicked outside panel
      * added BlockInputEvents comp which blocks all events to lower layers
      * event.propagationStopped = true not required */
@@ -396,7 +385,6 @@ export class TowerView extends Component {
   private onTowerPanelNodeClick(event: EventTouch): void {
     // block event to blockTouchNode, prevents closing of panel
     event.propagationStopped = true;
-    log("TowerView onTowerPanelNodeClick()"); // !_DEBUG_
   }
 
   /// Helper Methods
