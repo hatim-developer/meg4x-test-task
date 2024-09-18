@@ -6,6 +6,7 @@ export class PlayerStore {
   private static _instance: PlayerStore;
   private _currency$: BehaviorSubject<number>;
   private _heroes$: BehaviorSubject<IHero[]>;
+  private _buildingId$: BehaviorSubject<string>;
 
   private constructor() {
     // * shared player global currency state
@@ -13,6 +14,9 @@ export class PlayerStore {
 
     // * list of hired summoned heroes global state
     this._heroes$ = new BehaviorSubject<IHero[]>([]);
+
+    // * current selected building global state by player
+    this._buildingId$ = new BehaviorSubject<string>("hire_tower");
   }
 
   public static getInstance() {
@@ -56,5 +60,10 @@ export class PlayerStore {
     const heroes = this._heroes$.value;
     heroes.push(hero);
     return this._heroes$.next(heroes);
+  }
+
+  /// _buildingId$ Methods
+  public getBuildingObservable() {
+    return this._buildingId$.asObservable();
   }
 }

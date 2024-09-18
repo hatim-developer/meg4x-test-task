@@ -26,13 +26,10 @@ export class TowerViewModel {
     // * queue of active hired heroes, only required by view
     this._summonHeroesQueue$ = new BehaviorSubject<HeroModel[]>([]);
 
-    this.loadData();
     this.subscribeEvents();
   }
 
-  private loadData(): void {
-    const buildingId = "hire_tower"; // TODO: get from initial_state.json
-
+  private loadData(buildingId: string): void {
     this.towerModel.loadBuildingData(buildingId);
   }
 
@@ -64,6 +61,14 @@ export class TowerViewModel {
         setTimeout(() => {
           this.shiftSummonedHero();
         }, 30);
+      }
+    });
+
+    this.playerStore.getBuildingObservable().subscribe((building) => {
+      if (building) {
+        this.loadData(building);
+      } else {
+        warn("TowerVM:getBuildingObservable buildingId$ is missing", building);
       }
     });
   }
