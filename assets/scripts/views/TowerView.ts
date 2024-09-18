@@ -1,4 +1,24 @@
-import { _decorator, Button, Component, instantiate, Label, Layout, Prefab, Sprite, UIOpacity, warn, Node, Input, log, EventTouch, Color } from "cc";
+import {
+  _decorator,
+  Button,
+  Component,
+  instantiate,
+  Label,
+  Layout,
+  Prefab,
+  Sprite,
+  UIOpacity,
+  warn,
+  Node,
+  Input,
+  log,
+  EventTouch,
+  Color,
+  tween,
+  Vec3,
+  view,
+  UITransform
+} from "cc";
 import { TowerViewModel } from "../viewmodels/TowerViewModel";
 import { Subscription } from "rxjs";
 import { IBuildingInfo, IHero, Nullable } from "../common/types";
@@ -186,8 +206,14 @@ export class TowerView extends Component {
     }
   }
   private showTowerPanel(): void {
-    // TODO: Add slide in animation
-    this.node.active = true;
+    // activate node first
+    this.handleNodeVisibility(true);
+
+    if (this.towerPanelNode) {
+      this.startSlideAnimation(this.towerPanelNode, this.getPanelTargetPos(), () => {
+        this.handleNodeVisibility(true);
+      });
+    }
   }
 
   private closeTowerPanel(): void {
@@ -196,8 +222,28 @@ export class TowerView extends Component {
       this._towerViewModel.deselectHero();
     }
 
-    // TODO: Add slide out animation
-    this.node.active = false;
+    if (this.towerPanelNode) {
+      this.startSlideAnimation(this.towerPanelNode, this.getPanelTargetPos(true), () => {
+        // remove node from rendering tree
+        this.handleNodeVisibility(false);
+      });
+    }
+  }
+
+  private startSlideAnimation(target: Node, targetPos: Vec3, onComplete?: Function): void {
+    tween(target)
+      .to(0.25, { position: targetPos })
+      .call(() => {
+        if (onComplete) {
+          onComplete();
+        }
+      })
+      .start();
+  }
+
+  handleNodeVisibility(active: boolean): void {
+    log("TowerView handleNodeVisibility() node active:", active); // !_DEBUG_
+    this.node.active = active;
   }
 
   private updateBuildingDetails(building: IBuildingInfo): void {
@@ -286,8 +332,11 @@ export class TowerView extends Component {
     this.labelPanelDesc!.string = "";
     this.layoutSummonQueue!.node.removeAllChildren();
     this.layoutHeroesList!.node.removeAllChildren();
-
     this.resetHireButton();
+
+    this.node.setPosition(Vec3.ZERO); // place node in center of screen
+    this.towerPanelNode?.setPosition(this.getPanelTargetPos(true));
+    this.handleNodeVisibility(false);
   }
 
   private resetHireButton(): void {
@@ -348,5 +397,25 @@ export class TowerView extends Component {
     // block event to blockTouchNode, prevents closing of panel
     event.propagationStopped = true;
     log("TowerView onTowerPanelNodeClick()"); // !_DEBUG_
+  }
+
+  /// Helper Methods
+  private getPanelTargetPos(slideOut: boolean = false): Vec3 {
+    if (this.towerPanelNode === null) {
+      warn("TowerView towerPanelNode is null");
+      return Vec3.ZERO;
+    }
+
+    const gameHeight = view.getVisibleSize().height;
+    const transform = this.towerPanelNode?.getComponent(UITransform);
+
+    // bottom of screen wrt parent - if you change parentY panel should still be at bottom
+    const bottomY = (gameHeight * 0.5 + this.node.position.y) * -1;
+    let targetPosY = bottomY;
+
+    if (transform) {
+      targetPosY += transform.height * transform.anchorY * (slideOut ? -1 : 1);
+    }
+    return new Vec3(0, targetPosY, 0);
   }
 }
